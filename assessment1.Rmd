@@ -1,0 +1,36 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+
+Unzip and read activity data.
+
+```{r}
+load(ddply)
+data <- read.csv(unz("activity.zip", "activity.csv"))
+```
+
+Convert the values to their appropriate types.
+```{r}
+data$date <- as.POSIXct(strptime(data$date, '%Y-%m-%d'))
+data$week <- format(data$date, "%Y-W%U")
+data$byweek <- ddply(data, .(week), summarize)
+```
+## What is mean total number of steps taken per day?
+
+
+
+## What is the average daily activity pattern?
+
+
+
+## Imputing missing values
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
