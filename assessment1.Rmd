@@ -72,7 +72,7 @@ median(data.byday$x)
 
 ## What is the average daily activity pattern?
 
-```{r}
+```{r plot1}
 plot(data.bytime.mean$Group.1, data.bytime.mean$x, type='l')
 ```
 
