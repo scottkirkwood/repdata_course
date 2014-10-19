@@ -1,5 +1,6 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+author: Scott Kirkwood
 output: 
   html_document:
     keep_md: true
@@ -8,17 +9,31 @@ output:
 
 ## Loading and preprocessing the data
 
-Unzip and read activity data.
+Unzip and read activity data in one step.
 
 ```{r}
 data <- read.csv(unz("activity.zip", "activity.csv"))
 ```
 
-Convert date column to a date and add a weekday value.
+Convert date and interval to a date.
 ```{r}
-data$date <- as.POSIXct(strptime(data$date, '%Y-%m-%d'))
-data$weekday <- factor(weekdays(data$date, abbreviate = TRUE), levels  =
- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'))
+data$date <- as.POSIXct(strptime(paste(data$date, data$interval), '%Y-%m-%d %H%M'))
+```
+
+Convert just the interval to a time.
+```{r}
+data$time <- as.POSIXct(strptime(data$interval, '%H%M'))
+```
+
+Add weekday column with levels.
+```{r}
+data$weekday <- factor(weekdays(data$date, abbreviate = TRUE),
+    levels = c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'))
+```
+
+Add a weekend column.
+```{r}
+data$weekend <- factor(ifelse(data$weekday %in% c('Sat', 'Sun'), 'weekend', 'weekday'))
 ```
 
 Aggregated the steps over days:
@@ -33,10 +48,9 @@ names(data.byweekday) <- c('weekday', 'steps')
 levels(data.byweekday$weekday) <- c('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 ```
 
-Aggregated the steps by weekday:
+Aggregated the steps by weekday/weekend:
 
 ```{r}
-data$weekend <- factor(ifelse(data$weekday %in% c('Sat', 'Sun'), 'weekend', 'weekday'))
 data.byweekend.mean <- aggregate(x = data$steps,
                                  by = list(data$weekend),
                                  FUN = mean,
@@ -48,36 +62,53 @@ data.byweekend.sum <- aggregate(x = data$steps,
 names(data.byweekend) <- c('weekend', 'steps')
 ```
 
+Aggregate the steps by time.
+
 ```{r}
 data.bytime.mean <- aggregate(x = data$steps,
-                              by = list(data$interval),
+                              by = list(data$time),
                               FUN = mean,
                               na.rm = TRUE)
-
+names(data.bytime.mean) <- c('time', 'steps')
 data.bytime.sum <- aggregate(x = data$steps,
-                             by = list(data$interval),
+                             by = list(data$time),
                              FUN = sum,
                              na.rm = TRUE)
-names(data.byweekend) <- c('weekend', 'steps')
 ```
 
 ## What is mean total number of steps taken per day?
 
-Mean and median values.
+Mean,
 
 ```{r}
-mean(data.byday$x)
-median(data.byday$x)
+mean(data.byday$x, na.rm = TRUE)
+```
+
+Median
+```{r}
+median(data.byday$x, na.rm = TRUE)
 ```
 
 ## What is the average daily activity pattern?
 
 ```{r plot1}
-plot(data.bytime.mean$Group.1, data.bytime.mean$x, type='l')
+plot(data.bytime.mean$time, data.bytime.mean$steps, type='l')
+```
+
+Time when we have the most steps.
+
+```{r}
+t <- data.bytime.mean$time[which.max(data.bytime.mean$steps)]
+format(t, "%H:%M")
 ```
 
 ## Imputing missing values
 
+1) Total number of missing values:
+
+```{r}
+sum(is.na(data$steps))
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
